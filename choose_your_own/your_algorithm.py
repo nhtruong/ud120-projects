@@ -31,14 +31,16 @@ plt.show()
 ### your code here!  name your classifier object clf if you want the 
 ### visualization code (prettyPicture) to show you the decision boundary
 
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score as acc
 
-
-
-
-
+clf = RandomForestClassifier(n_jobs=-1,criterion="gini", n_estimators=100,min_samples_leaf=5,max_features=1)
+clf.fit(features_train,labels_train)
+pred = clf.predict(features_test)
+print "Accuracy",acc(pred,labels_test)
 
 
 try:
-    prettyPicture(clf, features_test, labels_test)
+    prettyPicture(clf, features_train, labels_train)
 except NameError:
     pass

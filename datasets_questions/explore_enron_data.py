@@ -19,4 +19,16 @@ import pickle
 
 enron_data = pickle.load(open("../final_project/final_project_dataset.pkl", "r"))
 
+POI = {person:enron_data[person] for person in enron_data if enron_data[person]['poi'] == True}
+
+enron_data['PRENTICE JAMES']['total_stock_value']
+
+enron_data['COLWELL WESLEY']['from_this_person_to_poi']
+
+enron_data['SKILLING JEFFREY K']['total_payments']
+enron_data['LAY KENNETH L']['total_payments']
+enron_data['FASTOW ANDREW S']['total_payments']
+
+from sklearn import linear_model
+reg = linear_model.LinearRegression()
 
