@@ -63,10 +63,12 @@ plt.show()
 
 
 from sklearn.cluster import KMeans
-
+from sklearn.preprocessing import MinMaxScaler
+scaler = MinMaxScaler()
+scaled_features = scaler.fit_transform(finance_features)
 clf = KMeans(n_clusters=2)
-clf.fit(finance_features)
-pred = clf.predict(finance_features)
+clf.fit(scaled_features)
+pred = clf.predict(scaled_features)
 
 ### rename the "name" parameter when you change the number of features
 ### so that the figure gets saved to a different file
