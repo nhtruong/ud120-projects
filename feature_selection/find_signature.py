@@ -22,6 +22,10 @@ authors = pickle.load( open(authors_file, "r") )
 from sklearn import cross_validation
 features_train, features_test, labels_train, labels_test = cross_validation.train_test_split(word_data, authors, test_size=0.1, random_state=42)
 
+
+for outcast in ["sshacklensf", "cgermannsf"]:
+    features_train = [x.replace(outcast,"") for x in features_train]
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 vectorizer = TfidfVectorizer(sublinear_tf=True, max_df=0.5,
                              stop_words='english')
@@ -33,11 +37,17 @@ features_test  = vectorizer.transform(features_test).toarray()
 ### of data points and a large number of features;
 ### train on only 150 events to put ourselves in this regime
 features_train = features_train[:150].toarray()
-labels_train   = labels_train[:150]
+labels_train = labels_train[:150]
 
 
 
 ### your code goes here
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score as acc
 
-
-
+clf = DecisionTreeClassifier()
+clf.fit(features_train,labels_train)
+pred = clf.predict(features_test)
+print acc(pred,labels_test)
+print [(i,x) for i,x in enumerate(clf.feature_importances_) if x > 0.2]
+print vectorizer.get_feature_names()[21323]
