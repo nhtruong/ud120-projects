@@ -67,17 +67,13 @@ from sklearn.tree import DecisionTreeClassifier as DTC
 from sklearn.svm import SVC
 
 X_train, X_test, y_train, y_test = train_test_split(features,labels,test_size=0.3,random_state=10)
+no_features = len(features_list)-1
 
 scl =  MinMaxScaler()
-pca = PCA(n_components=(len(features_list)-1)*10/10)
-gnb = GNB()
-dtc = DTC()
-svc = SVC()
+pca = PCA(n_components=no_features*9/10)
 
-for c in [svc,dtc,gnb]:
+for c in [GNB(),DTC(),SVC()]:
     clf = make_pipeline(scl,pca,c)
-    clf.fit(X_train,y_train)
-    pred = clf.predict(X_test)
     print '-----------------------'
     test_classifier(clf,data_dict,features_list)
 
@@ -89,7 +85,25 @@ for c in [svc,dtc,gnb]:
 ### http://scikit-learn.org/stable/modules/generated/sklearn.cross_validation.StratifiedShuffleSplit.html
 
 from sklearn.grid_search import GridSearchCV
+from sklearn.pipeline import Pipeline, FeatureUnion
 
+trans = FeatureUnion([("scale",MinMaxScaler()),("pca",PCA())])
+grid = GridSearchCV(Pipeline([("transformer",trans),("classifier",DTC())]),
+                    {'transformer__pca__n_components':range(1,no_features+1),
+                     'classifier__criterion':['gini','entropy'],
+                     'classifier__max_depth':[1,2,3,4,5,6,7],
+                     'classifier__min_samples_split':[2,3,4]},
+                    scoring='f1',
+                    n_jobs=-1,
+                    cv=10)
+grid.fit(features, labels)
+clf = grid.best_estimator_
+
+print grid.best_score_
+print grid.best_params_
+print
+
+test_classifier(clf,data_dict,features_list)
 
 
 ### Task 6: Dump your classifier, dataset, and features_list so anyone can
