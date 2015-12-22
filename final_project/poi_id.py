@@ -105,7 +105,7 @@ def validate_model(model, X_test, y_test):
     precision = precision_score(y_test,preds)
     recall = recall_score(y_test,preds)
     f1 = f1_score(y_test,preds)
-    print "(VALIDATION) Precision: {:.2}   Recall: {:.2}   F1-Score: {:.2}".format(precision,recall,f1)
+    print "\n(VALIDATION) Precision: {:.2}   Recall: {:.2}   F1-Score: {:.2}\n".format(precision,recall,f1)
 
 #----------------------------------------------------------
 #   Function) Build a Classification Model
@@ -119,14 +119,14 @@ from sklearn.grid_search import GridSearchCV
 from sklearn.pipeline import Pipeline, FeatureUnion
 
 
-def build_model(selected_features, classifier, parameters={}, use_scaler = False, use_kbest = False, use_pca = False):
+def build_model(selected_features, classifier, parameters={}, use_scaler = True, use_kbest = False, use_pca = False):
 
     feature_count = len(selected_features) - 1
 
     # Extract features and labels from dataset
     data = featureFormat(data_dict, selected_features, sort_keys = True)
     labels, features = targetFeatureSplit(data)
-    X_train, X_test, y_train, y_test = train_test_split(features,labels,train_size=0.7,random_state=10)
+    X_train, X_test, y_train, y_test = train_test_split(features,labels,train_size=0.75,random_state=10)
 
     # Add Prefix for classifier parameters
     parameters = {'classifier__'+k:parameters[k] for k in parameters}
@@ -196,31 +196,30 @@ all_features = ['poi']+[k for k in data_dict[data_dict.keys()[0]] if k not in ['
 
 build_model(all_features, SVC(), use_scaler=True)
 build_model(all_features, KNC(), use_scaler=True)
-build_model(all_features, DTC())
+build_model(all_features, DTC(), use_scaler=False)
 
-# Decicion Tree takes the cake here!!!
+# Decicion Tree and Nearest Neighbors look promising!
 
 #----------------------------------------------------------
 #   Select Features
 #----------------------------------------------------------
 
-_ , features_list = build_model(all_features, DTC(), use_kbest=True)
-
 #----------------------------------------------------------
 #   Tuning Parameters for the Decision Tree
 #----------------------------------------------------------
 
-clf, features_list = build_model(features_list, DTC(max_features=None),
+clf, features_list = build_model(all_features, DTC(max_features=None),
                                   {'criterion':['gini','entropy'],
-                                   'max_depth':[2,3,4,5,6],
-                                   'min_samples_split':[2,3]},
+                                   'max_depth':[2,3,4,5,6,7],
+                                   'min_samples_split':[2,3,4]},
                                  use_kbest=True)
 
-clf, _ = build_model(features_list, DTC(max_features=None),
-                                  {'criterion':['gini','entropy'],
-                                   'max_depth':[2,3,4,5,6],
-                                   'min_samples_split':[2,3]},
-                                 use_pca=True)
+clf, features_list = build_model(all_features, KNC(),
+                                 {'n_neighbors':[2,3,4,5],
+                                  'weights':['uniform','distance'],
+                                  'leaf_size':[5,10,30,50],
+                                  'p':[1,2,3],},
+                                 use_kbest=True)
 
 
 
